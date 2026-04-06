@@ -2,8 +2,50 @@
 import styles from './page.module.css';
 import Link from "next/link"
 import useAuth  from '../../contexts/AuthContext';
+import CreateRoomModal from '@/components/createRoomModal';
+import JoinRoomModal from '@/components/joinRoomModal';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import request from '@/api/api';
+interface Room{
+  id: number;
+  name: string;
+  code: string;
+  desc: string;
+  deadline: Date;
+}
 export default function Home() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const router = useRouter();
   // Для демонстрации: предположим, что пользователь НЕ авторизован
+   const handleCreateRoom = async (roomData: { name: string; desc: string; deadline: string }) => {
+        try {
+            const response = await request('/room/create', 'post', roomData);
+            if (response.status === 'success') {
+                const room = response.data as Room;
+                router.push(`/room/${room.code}`);
+
+            }
+        } catch (error) {
+            console.error('Failed to create room:', error);
+    }
+    };
+    const handleJoinRoom = async (roomCode: string) => {
+      try {
+          const response = await request(`/room/join/`, 'post', { code: roomCode });
+          if (response.status === 'success') {
+              setIsJoinModalOpen(false);
+              router.push(`/room/${roomCode}`);
+          } else {
+              console.error('Join room failed:', response);
+              alert('Не удалось присоединиться к комнате');
+          }
+      } catch (error) {
+          console.error('Failed to join room:', error);
+          alert('Ошибка при присоединении к комнате');
+      }
+  };
   const {user, isAuth} = useAuth();
   return (
     <>
@@ -14,8 +56,7 @@ export default function Home() {
           <span className={styles.logoText}>HackRoom</span>
         </div>
         <nav className={styles.nav}>
-          <a href="#" className={styles.navLink}>О проекте</a>
-          <a href="#" className={styles.navLink}>FAQ</a>
+
         </nav>
         <div className={styles.authButtons}>
           {!isAuth ? (
@@ -24,10 +65,12 @@ export default function Home() {
               <Link href="/register" className={styles.registerBtn}>Регистрация</Link>
             </>
           ) : (
+            <Link href="/dashboard">
             <div className={styles.userMenu}>
               <span className={styles.userName}>{user?.username}</span>
               <div className={styles.avatar}></div>
             </div>
+            </Link>
           )}
         </div>
       </header>
@@ -50,8 +93,8 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <button className={styles.primaryBtn}>➕ Создать комнату</button>
-                  <button className={styles.secondaryBtn}>🔑 Войти по коду</button>
+                  <button className={styles.primaryBtn} onClick={() => setIsCreateModalOpen(true)}>➕ Создать комнату</button>
+                  <button className={styles.secondaryBtn} onClick={() => setIsJoinModalOpen(true)}>Войти по коду</button>
                 </>
               )}
             </div>
@@ -64,8 +107,8 @@ export default function Home() {
           <div className={styles.heroGraphic}>
             <div className={styles.codeBlock}>
               <code>$ room create "hack-team-2025"</code>
-              <code>🔐 Room code: <span className={styles.highlightCode}>HACK-42NF-9KL</span></code>
-              <code>✨ Пригласи друзей и начни кодить!</code>
+              <code>Room code: <span className={styles.highlightCode}>HACK-42NF-9KL</span></code>
+              <code>Пригласи друзей и начни кодить!</code>
             </div>
           </div>
         </section>
@@ -75,23 +118,33 @@ export default function Home() {
           <h2 className={styles.sectionTitle}>Как это работает?</h2>
           <div className={styles.grid}>
             <div className={styles.card}>
-              <div className={styles.cardIcon}>🏠</div>
+              { /* <div className={styles.cardIcon}>🏠</div> */}
               <h3>1. Создай комнату</h3>
               <p>Один клик — и твое командное пространство готово. Назови комнату и получи уникальный код доступа.</p>
             </div>
             <div className={styles.card}>
-              <div className={styles.cardIcon}>📨</div>
+              { /* <div className={styles.cardIcon}>📨</div> */}
               <h3>2. Поделись кодом</h3>
               <p>Отправь код приглашения своим будущим тиммейтам. Без регистрации и сложных приглашений.</p>
             </div>
             <div className={styles.card}>
-              <div className={styles.cardIcon}>⚡</div>
+              { /* <div className={styles.cardIcon}>⚡</div> */}
               <h3>3. Работайте синхронно</h3>
               <p>Трекинг задач, общий чат и список участников — всё что нужно для победы на хакатоне.</p>
             </div>
           </div>
         </section>
       </div>
+      <CreateRoomModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreateRoom={handleCreateRoom}
+      />
+      <JoinRoomModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+          onJoinRoom={handleJoinRoom}
+      />
     </>
   );
 }

@@ -8,6 +8,7 @@ import request from '@/api/api';
 import CreateRoomModal from '@/components/createRoomModal';
 import JoinRoomModal from '@/components/joinRoomModal';
 import styles from './dashboard.module.css';
+import Cookies from 'js-cookie';
 
 interface Room {
     id: number;
@@ -68,20 +69,17 @@ export default function Dashboard() {
         fetchUserRooms();
     }, [user, isUserLoading]);
     
-    const handleCreateRoom = async (roomData: { name: string; deadline: string }) => {
+    const handleCreateRoom = async (roomData: { name: string; description: string; deadline: string }) => {
         try {
             const response = await request('/room/create', 'post', roomData);
             if (response.status === 'success') {
                 setRooms(prev => [response.data, ...prev]);
+                console.log(roomData)
                 setIsCreateModalOpen(false);
-            } else {
-                console.error('Create room failed:', response);
-                alert('Не удалось создать комнату');
             }
         } catch (error) {
             console.error('Failed to create room:', error);
-            alert('Ошибка при создании комнаты');
-        }
+    }
     };
     
     const handleJoinRoom = async (roomCode: string) => {
@@ -131,7 +129,7 @@ export default function Dashboard() {
                     <button 
                         className={styles.logoutBtn}
                         onClick={() => {
-                            Cookie.remove('session');
+                            Cookies.remove('session');
                             router.push('/login');
                         }}
                     >

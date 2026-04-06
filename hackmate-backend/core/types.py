@@ -27,6 +27,7 @@ class Room(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     code: str = Field(unique=True)
+    desc: str | None = Field(default=None)
     deadline: datetime
 
     @computed_field

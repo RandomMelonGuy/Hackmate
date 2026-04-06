@@ -17,11 +17,11 @@ interface Room{
   id: number;
   name: string;
   code: string;
-  deadline: Date
-  members: Member[]
+  desc: string;
+  deadline: Date;
+  members: Member[];
 }
 
-// Типы для демо-данных
 interface Member {
   id: number;
   username: string;
@@ -56,6 +56,7 @@ export default function RoomPage() {
     id: 0,
     name: '',
     code: '',
+    desc: "",
     deadline: new Date(),
     members: []
   }, members: [], tasks: []});
@@ -84,6 +85,7 @@ export default function RoomPage() {
         if (!isMounted) return;
         if(data.status === "success"){
           setRoomData(data.data as RoomData)
+          console.log(data.data)
           const members = data.data.members as Member[];
           if (!members.some(member => member.id === user?.id)){
             console.log(members, user)
@@ -234,7 +236,6 @@ export default function RoomPage() {
       assignedToName: assignee?.username,
     };
 
-    console.log({ name: newTaskTitle, status: "todo", assignedTo: newTaskAssignee, room_id: room.id });
 
     const res = await request("/task/create", "post", { name: newTaskTitle, desc: newTaskDesc, status: "todo", assignedTo: newTaskAssignee, room_id: room.id });
 
@@ -257,12 +258,13 @@ export default function RoomPage() {
     if (!task) return;
     const res = await request("/task/update", "post", {name: task.name, desc: task.desc, status: newStatus, assignedTo: task.assignedTo, task_id: taskId});
     if (res.status === "success"){
+      wsRef.current.send(JSON.stringify({msg_type: "task_updated"}))
       setTasks(tasks.map(task => 
       task.id === taskId ? { ...task, status: newStatus } : task
     ));
     }
     else{
-      alert("HUH")
+      alert("Не удалось изменить статус. Проверьте соединение с интернетом.")
     }
   };
 
@@ -402,20 +404,16 @@ export default function RoomPage() {
           </div>
 
           {/* Техническое задание */}
+          {room.desc && (
           <div className={styles.specBlock}>
             <div className={styles.specHeader}>
               <span>📋 Техническое задание</span>
             </div>
             <div className={styles.specContent}>
-              <p>Разработать веб-приложение для организации хакатонов с возможностью:</p>
-              <ul>
-                <li>Создания комнат по коду</li>
-                <li>Управления задачами с назначением ответственных</li>
-                <li>Внутреннего чата</li>
-                <li>Отслеживания прогресса команды</li>
-              </ul>
+              <pre>{room.desc}</pre>
             </div>
           </div>
+        )}
         </aside>
 
         {/* Правая колонка - Задачи/Чат */}

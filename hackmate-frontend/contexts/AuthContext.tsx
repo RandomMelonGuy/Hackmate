@@ -52,6 +52,9 @@ export function AuthProvider({children}: {children: ReactNode}){
             if (userData.status === "success") {
                 setUser(userData.data as User);
             }
+            else{
+                return false;
+            }
             router.push("/dashboard"); // 👈 На дашборд, а не на главную
             return true;
         }

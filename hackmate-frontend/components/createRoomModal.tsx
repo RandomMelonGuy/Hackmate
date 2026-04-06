@@ -6,11 +6,12 @@ import styles from './createRoomModal.module.css';
 interface CreateRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateRoom: (roomData: { name: string; deadline: string }) => void;
+  onCreateRoom: (roomData: { name: string; desc: string; deadline: string }) => void;
 }
 
 export default function CreateRoomModal({ isOpen, onClose, onCreateRoom }: CreateRoomModalProps) {
   const [roomName, setRoomName] = useState('');
+  const [roomDescription, setRoomDescription] = useState('');
   const [deadline, setDeadline] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,8 +23,13 @@ export default function CreateRoomModal({ isOpen, onClose, onCreateRoom }: Creat
     
     setIsLoading(true);
     try {
-      await onCreateRoom({ name: roomName.trim(), deadline });
+      await onCreateRoom({ 
+        name: roomName.trim(), 
+        desc: roomDescription.trim(),
+        deadline 
+      });
       setRoomName('');
+      setRoomDescription('');
       setDeadline('');
       onClose();
     } catch (error) {
@@ -33,7 +39,6 @@ export default function CreateRoomModal({ isOpen, onClose, onCreateRoom }: Creat
     }
   };
 
-  // Минимальная дата - сегодня
   const minDate = new Date().toISOString().slice(0, 16);
 
   return (
@@ -49,7 +54,7 @@ export default function CreateRoomModal({ isOpen, onClose, onCreateRoom }: Creat
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
             <label htmlFor="roomName" className={styles.label}>
-              Название комнаты
+              Название комнаты <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -64,8 +69,22 @@ export default function CreateRoomModal({ isOpen, onClose, onCreateRoom }: Creat
           </div>
 
           <div className={styles.inputGroup}>
+            <label htmlFor="roomDescription" className={styles.label}>
+              Описание / Техническое задание
+            </label>
+            <textarea
+              id="roomDescription"
+              value={roomDescription}
+              onChange={(e) => setRoomDescription(e.target.value)}
+              className={styles.textarea}
+              placeholder="Опишите задачу хакатона, требования к решению, критерии оценки..."
+              rows={5}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
             <label htmlFor="deadline" className={styles.label}>
-              Дедлайн хакатона
+              Дедлайн хакатона <span className={styles.required}>*</span>
             </label>
             <input
               type="datetime-local"

@@ -151,3 +151,25 @@
     opacity: 1;
   }
 }
+.textarea {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  color: #eef5ff;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.textarea:focus {
+  border-color: #646cff;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.required {
+  color: #f87171;
+  font-size: 0.8rem;
+}

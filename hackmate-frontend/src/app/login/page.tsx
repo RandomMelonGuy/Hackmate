@@ -11,6 +11,7 @@ export default function Login() {
   const clickHandler = async() => {
     const data = {username, password};
     const success = await login(data);
+    if (!success) alert("Пользователь не найден")
   }
 
   return (

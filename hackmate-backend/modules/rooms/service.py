@@ -23,7 +23,8 @@ class RoomService:
         data = {
             "name": req.name,
             "deadline": req.deadline,
-            "code": code
+            "code": code,
+            "desc": req.desc
         }
         try:
             with Session(self.engine) as session:
@@ -55,6 +56,7 @@ class RoomService:
                 stat = select(Room).where(Room.code == code)
                 room = session.exec(stat).one()
                 data = {**room.model_dump(), "expired": room.expired}
+                print(data)
             return data
         except Exception as e:
             print(repr(e))
