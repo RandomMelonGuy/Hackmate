@@ -1,0 +1,6 @@
+body {
+  background: #030614; /* Очень темный синий */
+  background-image: radial-gradient(circle at 10% 20%, rgba(100, 108, 255, 0.05) 0%, transparent 50%);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}

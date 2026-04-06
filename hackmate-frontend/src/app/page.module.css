@@ -1,0 +1,294 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  color: #eef5ff;
+}
+
+/* Hero секция */
+.hero {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.heroContent {
+  flex: 1;
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #a0c0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradientText {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.description {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.primaryBtn {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(100, 108, 255, 0.4);
+}
+
+.secondaryBtn {
+  background: transparent;
+  border: 1px solid #3b4252;
+  color: #eef5ff;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondaryBtn:hover {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.heroGraphic {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.codeBlock {
+  background: #0f172a;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  font-family: monospace;
+}
+
+.codeBlock code {
+  display: block;
+  color: #8b5cf6;
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+/* Секция фич */
+.features {
+  padding: 4rem 0;
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 24px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: #646cff;
+  transform: translateY(-8px);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.cardIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.highlightCode {
+  color: #8b5cf6;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+}
+
+/* Хедер */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.logoIcon {
+  font-size: 1.8rem;
+}
+
+.logoText {
+  background: linear-gradient(135deg, #ffffff 0%, #a0c0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.navLink {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+
+.navLink:hover {
+  color: #eef5ff;
+}
+
+.authButtons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.loginBtn {
+  background: transparent;
+  border: 1px solid #3b4252;
+  color: #eef5ff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.loginBtn:hover {
+  border-color: #646cff;
+  color: #646cff;
+}
+
+.registerBtn {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  font-weight: 500;
+}
+
+.registerBtn:hover {
+  transform: translateY(-2px);
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(100, 108, 255, 0.1);
+  padding: 0.3rem 0.8rem 0.3rem 1rem;
+  border-radius: 40px;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+.userName {
+  font-weight: 500;
+  color: #eef5ff;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #646cff, #8b5cf6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+/* Добавь в конец файла */
+.authHint {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.authLink {
+  color: #8b5cf6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.authLink:hover {
+  text-decoration: underline;
+}
