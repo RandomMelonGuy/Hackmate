@@ -14,6 +14,7 @@ class RoomWS:
         if code not in self.rooms:
             self.rooms[code] = []
         self.rooms[code].append(ws)
+        print(self.rooms)
         return str(id(ws))
     
     async def disconnect(self, code: str, ws: WebSocket):
@@ -29,15 +30,16 @@ class RoomWS:
                 del self.rooms[code]
     
     async def broadcast(self, code: str, message: WSMessage):
-        if code not in self.rooms:
+        print(code, self.rooms)
+        if code not in self.rooms.keys():
             return
         
         # Создаём копию списка для безопасной итерации
         connections = self.rooms[code].copy()
-        
         for ws in connections:
             # Не отправляем отправителю
             try:
+                print("WS",ws)
                 await ws.send_json(message.model_dump())
             except Exception as e:
                 print(f"Failed to send to {id(ws)}: {e}")

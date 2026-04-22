@@ -14,3 +14,12 @@ def verify_user(req: Request):
     except Exception as e:
         print(repr(e))
         raise HTTPException(401, "Session token has been corrupted")
+    
+
+def decode_jwt(session: str):
+    try:
+        dict = jwt.decode(session, settings.JWT_KEY, ["HS256"])
+        return dict
+    except Exception as e:
+        print(repr(e))
+        raise HTTPException(401, "Session token has been corrupted")

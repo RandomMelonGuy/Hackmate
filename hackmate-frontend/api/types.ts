@@ -11,6 +11,7 @@ type ErrorResponce = {
 export type User = {
     id: number
     username: string
+    github_username: string | undefined
 }
 
 export type WSMessage = {

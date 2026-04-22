@@ -12,7 +12,7 @@ service = AuthService()
 def auth(data: AuthData, responce: Response) -> APIResponce:
     code = service.auth(data)
     if code:
-        responce.set_cookie("session", code)
+        responce.set_cookie("session", code, samesite="lax")
         return APIResponce(status="success")
     else:
         return APIResponce(status="error")

@@ -13,7 +13,6 @@ class AuthService:
         self.engine = engine
     
     def create_jwt(self, data: User) -> str:
-        print()
         jwt_data = {
             "id": data.id,
             "username": data.username,
@@ -41,10 +40,12 @@ class AuthService:
     def get_jwt(self, session: str):
         try:
             obj = jwt.decode(session, settings.JWT_KEY, "HS256")
-            del obj["iat"]
-            del obj["jti"]
-            del obj["exp"]
-            return obj
+            with Session(self.engine) as s:
+                user = s.get(User, obj["id"])
+                assert user
+            out = {"id": user.id, "username": user.username, "github_username": user.github_username}
+            print(out)
+            return out
         except Exception as e:
             print(repr(e))
             return None

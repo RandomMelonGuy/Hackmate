@@ -32,8 +32,8 @@ interface Task {
   name: string;
   desc?: string;
   status: 'todo' | 'in_progress' | 'done';
-  assignedTo?: number; // ID участника
-  assignedToName?: string; // Имя участника (для отображения)
+  assignedTo?: number;
+  assignedToName?: string;
 }
 
 interface Message {
@@ -43,6 +43,14 @@ interface Message {
   text: string;
 }
 
+interface Commit {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  url: string;
+}
+
 export default function RoomPage() {
   const { code } = useParams();
   const router = useRouter();
@@ -50,7 +58,7 @@ export default function RoomPage() {
   const {user, isLoading } = useAuth();
   const wsRef = useRef<WebSocket>(0);
   const roomCode = code as string;
-  // Демо-данные
+  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [roomData, setRoomData] = useState<RoomData>({room: {
     id: 0,
@@ -62,19 +70,137 @@ export default function RoomPage() {
   }, members: [], tasks: []});
   const { room, members } = roomData;
 
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDesc, setNewTaskDesc] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'chat' | 'commits'>('tasks');
+
+  // GitHub состояния
+  const [isRepoModalOpen, setIsRepoModalOpen] = useState(false);
+  const [repositories, setRepositories] = useState<{ name: string; description: string }[]>([]);
+  const [isLoadingRepos, setIsLoadingRepos] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [isLoadingCommits, setIsLoadingCommits] = useState(false);
+  const [connectedRepo, setConnectedRepo] = useState<string | null>(null);
+
   function shuffle(array: string[]) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
-  return array;
-}
 
   const genUUID = () => {
     const chars = "01234567890qwertyuiopasdfghjklzxcvbnm";
     const arr = shuffle(Array.from(chars));
     return arr.join("")
   }
+
+  // Загрузка коммитов подключённого репозитория
+  const loadCommits = async () => {
+    if (!connectedRepo) return;
+    
+    setIsLoadingCommits(true);
+    try {
+      const response = await request(`/github/commits/${room.id}`, "get");
+      if (response.status === "success" && response.data) {
+        setCommits(response.data);
+      } else {
+        setCommits([]);
+        if (response.message) {
+          console.error(response.message);
+        }
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки коммитов:", error);
+      setCommits([]);
+    } finally {
+      setIsLoadingCommits(false);
+    }
+  };
+
+  // Проверка подключённого репозитория при загрузке комнаты
+  const checkConnectedRepo = async () => {
+    try {
+      const res = await request(`/github/rooms/${room.id}/commits`, "get")
+      if (res.status == "success"){
+        setCommits(res.data)
+      }
+      else {
+        setConnectedRepo(null);
+        setCommits([]);
+      }
+    } catch (error) {
+      console.error("Ошибка проверки репозитория:", error);
+      setConnectedRepo(null);
+    }
+  };
+
+  // Загрузка списка репозиториев GitHub
+  const handleOpenRepoModal = async () => {
+    setIsRepoModalOpen(true);
+    setIsLoadingRepos(true);
+    
+    try {
+      const response = await request("/github/repos", "get");
+      if (response.status === "success" && response.data) {
+        setRepositories(response.data);
+      } else {
+        setRepositories([]);
+        alert("Не удалось загрузить репозитории. Возможно, вы не авторизованы через GitHub.");
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки репозиториев:", error);
+      setRepositories([]);
+      alert("Ошибка при загрузке репозиториев");
+    } finally {
+      setIsLoadingRepos(false);
+    }
+  };
+
+  // Подключение выбранного репозитория
+  const handleConnectRepo = async () => {
+    if (!selectedRepo) {
+      alert("Выберите репозиторий");
+      return;
+    }
+    
+    setIsConnecting(true);
+    
+    try {
+      const response = await request("/github/repo/connect", "post", {
+        room_id: room.id,
+        repo: selectedRepo
+      });
+      
+      if (response.status === "success") {
+        alert(`Репозиторий ${selectedRepo} успешно подключён к комнате!`);
+        setConnectedRepo(selectedRepo);
+        
+        const commitsResponse = await request(`/github/commits/${room.id}`, "get");
+        if (commitsResponse.status === "success" && commitsResponse.data) {
+          setCommits(commitsResponse.data);
+        }
+        
+        setActiveTab('commits');
+        setIsRepoModalOpen(false);
+        setSelectedRepo(null);
+      } else {
+        alert(response.message || "Ошибка при подключении репозитория");
+      }
+    } catch (error) {
+      console.error("Ошибка подключения:", error);
+      alert("Ошибка при подключении репозитория");
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -132,6 +258,7 @@ export default function RoomPage() {
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data) as WSMessage;
+        console.log(data);
         if (data.msg_type === "connection_est"){
           connectionRef.current = data.message;
           const sendData: WSMessage = {msg_type: "user_joined", me: data.message, message: user};
@@ -179,6 +306,7 @@ export default function RoomPage() {
     getRoomData(roomCode);
     getTasks(roomCode);
     getMessages(roomCode);
+    checkConnectedRepo();
 
     return () => {
       isMounted = false;
@@ -186,7 +314,6 @@ export default function RoomPage() {
       if (wsRef.current) {
           const wsToClose = wsRef.current;
           
-          // Убираем все обработчики, чтобы они не вызывались после закрытия
           wsToClose.onopen = null;
           wsToClose.onmessage = null;
           wsToClose.onerror = null;
@@ -199,15 +326,6 @@ export default function RoomPage() {
           wsRef.current = null;
       }
 }}, [user])
-
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const [newMessage, setNewMessage] = useState("");
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDesc, setNewTaskDesc] = useState("");
-  const [newTaskAssignee, setNewTaskAssignee] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'tasks' | 'chat'>('tasks');
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(roomCode);
@@ -236,7 +354,6 @@ export default function RoomPage() {
       assignedToName: assignee?.username,
     };
 
-
     const res = await request("/task/create", "post", { name: newTaskTitle, desc: newTaskDesc, status: "todo", assignedTo: newTaskAssignee, room_id: room.id });
 
     if (res.status === "success"){
@@ -249,6 +366,7 @@ export default function RoomPage() {
     }
 
     setNewTaskTitle("");
+    setNewTaskDesc("");
     setNewTaskAssignee(null);
     setIsAddTaskOpen(false);
   };
@@ -327,7 +445,6 @@ export default function RoomPage() {
     }
   };
 
-  // Подсчет статистики задач
   const tasksStats = {
     total: tasks.length,
     todo: tasks.filter(t => t.status === 'todo').length,
@@ -337,7 +454,6 @@ export default function RoomPage() {
 
   return (
     <div className={styles.container}>
-      {/* Шапка комнаты */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <div>
@@ -351,14 +467,20 @@ export default function RoomPage() {
             </div>
           </div>
         </div>
-        <button className={styles.leaveBtn} onClick={handleLeaveRoom}>
-          Покинуть комнату
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className={styles.githubRepoBtn} 
+            onClick={handleOpenRepoModal}
+          >
+            🔗 Подключить репозиторий
+          </button>
+          <button className={styles.leaveBtn} onClick={handleLeaveRoom}>
+            Покинуть комнату
+          </button>
+        </div>
       </header>
 
-      {/* Основной контент */}
       <div className={styles.mainGrid}>
-        {/* Левая колонка - Участники */}
         <aside className={styles.membersPanel}>
           <div className={styles.panelHeader}>
             <h2>Участники</h2>
@@ -372,13 +494,11 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.memberInfo}>
                   <div className={styles.memberName}>{member.username}</div>
-                  { /*{member.role && <div className={styles.memberRole}>{member.role}</div>} */}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Статистика задач */}
           <div className={styles.statsBlock}>
             <div className={styles.statsHeader}>
               <span>📊 Статистика задач</span>
@@ -403,7 +523,6 @@ export default function RoomPage() {
             </div>
           </div>
 
-          {/* Техническое задание */}
           {room.desc && (
           <div className={styles.specBlock}>
             <div className={styles.specHeader}>
@@ -416,9 +535,7 @@ export default function RoomPage() {
         )}
         </aside>
 
-        {/* Правая колонка - Задачи/Чат */}
         <div className={styles.mainPanel}>
-          {/* Табы */}
           <div className={styles.tabs}>
             <button 
               className={`${styles.tab} ${activeTab === 'tasks' ? styles.activeTab : ''}`}
@@ -432,9 +549,21 @@ export default function RoomPage() {
             >
               💬 Чат
             </button>
+            {connectedRepo && (
+              <button 
+                className={`${styles.tab} ${activeTab === 'commits' ? styles.activeTab : ''}`}
+                onClick={() => {
+                  setActiveTab('commits');
+                  if (commits.length === 0 && !isLoadingCommits) {
+                    loadCommits();
+                  }
+                }}
+              >
+                📜 Коммиты
+              </button>
+            )}
           </div>
 
-          {/* Контент вкладок */}
           {activeTab === 'tasks' ? (
             <div className={styles.tasksPanel}>
               <div className={styles.tasksHeader}>
@@ -490,7 +619,7 @@ export default function RoomPage() {
                 })}
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'chat' ? (
             <div className={styles.chatPanel}>
               <div className={styles.chatMessages}>
                 {messages.map(message => (
@@ -521,6 +650,66 @@ export default function RoomPage() {
                 </button>
               </form>
             </div>
+          ) : activeTab === 'commits' && (
+            <div className={styles.commitsPanel}>
+              <div className={styles.commitsHeader}>
+                <h2>📜 История коммитов</h2>
+                {connectedRepo && (
+                  <div className={styles.connectedRepoInfo}>
+                    <span className={styles.repoBadge}>🔗 {connectedRepo}</span>
+                    <button 
+                      className={styles.refreshCommitsBtn} 
+                      onClick={loadCommits}
+                      disabled={isLoadingCommits}
+                    >
+                      🔄 Обновить
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {isLoadingCommits ? (
+                <div className={styles.commitsLoader}>
+                  <div className={styles.loader}></div>
+                  <p>Загрузка коммитов...</p>
+                </div>
+              ) : commits.length === 0 ? (
+                <div className={styles.emptyCommits}>
+                  <span className={styles.emptyIcon}>📭</span>
+                  <h3>Нет коммитов</h3>
+                  <p>
+                    {connectedRepo 
+                      ? "В этом репозитории пока нет коммитов или они не загрузились" 
+                      : "Репозиторий не подключён. Нажмите 'Подключить репозиторий' выше"}
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.commitsList}>
+                  {commits.map((commit) => (
+                    <div key={commit.sha} className={styles.commitItem}>
+                      <div className={styles.commitAvatar}>
+                        <span>📝</span>
+                      </div>
+                      <div className={styles.commitContent}>
+                        <div className={styles.commitMessage}>{commit.message}</div>
+                        <div className={styles.commitMeta}>
+                          <span className={styles.commitAuthor}>👤 {commit.author}</span>
+                          <span className={styles.commitDate}>📅 {new Date(commit.date).toLocaleString('ru-RU')}</span>
+                          <a 
+                            href={commit.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className={styles.commitLink}
+                          >
+                            🔗 #{commit.sha.slice(0, 7)}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -547,7 +736,6 @@ export default function RoomPage() {
               onChange={(e) => setNewTaskDesc(e.target.value)}
               placeholder="Описание задачи"
               className={styles.modalInput}
-              autoFocus
             />
             <select
               value={newTaskAssignee || ""}
@@ -569,6 +757,71 @@ export default function RoomPage() {
                 Добавить
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно выбора репозитория GitHub */}
+      {isRepoModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsRepoModalOpen(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>🔗 Подключить репозиторий</h3>
+              <button className={styles.modalClose} onClick={() => setIsRepoModalOpen(false)}>✕</button>
+            </div>
+            
+            {isLoadingRepos ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <div className={styles.loader} style={{ margin: '0 auto' }}></div>
+                <p style={{ marginTop: '1rem', color: '#94a3b8' }}>Загрузка репозиториев...</p>
+              </div>
+            ) : repositories.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <p>📦 Нет доступных репозиториев</p>
+                <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                  Убедитесь, что вы авторизовались через GitHub<br />
+                  и у вас есть публичные репозитории
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className={styles.repoList}>
+                  {repositories.map((repo) => (
+                    <div
+                      key={repo.name}
+                      className={`${styles.repoItem} ${selectedRepo === repo.name? styles.repoItemSelected : ''}`}
+                      onClick={() => setSelectedRepo(repo.name)}
+                    >
+                      <span className={styles.repoIcon}>📁</span>
+                      <div className={styles.repoInfo}>
+                        <div className={styles.repoName}>{repo.name}</div>
+                        <div className={styles.repoFullName}>{repo.description}</div>
+                      </div>
+                      {selectedRepo === repo.description && (
+                        <span className={styles.repoCheck}>✓</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className={styles.modalActions}>
+                  <button 
+                    className={styles.modalCancel} 
+                    onClick={() => setIsRepoModalOpen(false)}
+                    disabled={isConnecting}
+                  >
+                    Отмена
+                  </button>
+                  <button 
+                    className={styles.modalSubmit} 
+                    onClick={handleConnectRepo}
+                    disabled={!selectedRepo || isConnecting}
+                  >
+                    {isConnecting ? 'Подключение...' : 'Подключить'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

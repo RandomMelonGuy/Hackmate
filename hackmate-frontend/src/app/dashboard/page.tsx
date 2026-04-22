@@ -65,6 +65,7 @@ export default function Dashboard() {
                 setIsRoomsLoading(false);
             }
         }
+        console.log(user)
         
         fetchUserRooms();
     }, [user, isUserLoading]);
@@ -111,6 +112,27 @@ export default function Dashboard() {
             </div>
         );
     }
+    // GitHub OAuth login handler
+    const handleGitHubLogin = () => {
+    const session = Cookies.get("session");
+    const width = 800;
+    const height = 600;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+
+    const popup = window.open(
+        `http://localhost:8000/github/enter?session=${session}`,
+        'github_login',
+        `width=${width},height=${height},left=${left},top=${top},popup=1`
+    );
+
+    const checkPopup = setInterval(() => {
+        if (popup.closed) {
+        clearInterval(checkPopup);
+        window.location.reload();
+        }
+    }, 500);
+    };
     
     // Если пользователя нет (и загрузка завершена), не рендерим (редирект уже сработал)
     if (!user) {
@@ -155,6 +177,13 @@ export default function Dashboard() {
                             🔑 Войти по коду
                         </button>
                     </div>
+                    {user.github_username ? <></> : 
+                    <button onClick={handleGitHubLogin} className={styles.githubBtn}>
+                    <span className={styles.githubIcon}>🐙</span>
+                    Войти с Github
+                    </button>
+                    }
+
                 </div>
                 
                 {rooms.length === 0 ? (

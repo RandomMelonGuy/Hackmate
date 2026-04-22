@@ -276,3 +276,27 @@
     grid-template-columns: 1fr;
   }
 }
+/* GitHub Button */
+.githubBtn {
+  background: linear-gradient(90deg, #24292e, #2d3748);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.githubBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(36, 41, 46, 0.4);
+  background: linear-gradient(90deg, #2d3748, #3a4455);
+}
+
+.githubIcon {
+  font-size: 1.1rem;
+}
