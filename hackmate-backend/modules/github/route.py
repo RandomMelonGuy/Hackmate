@@ -16,10 +16,7 @@ updater = RoomUpdater(service)
 
 @router.get("/enter")
 def enter_request(req: Request):
-    return_url = req.query_params.get('return_url')
     session = req.query_params.get("session")
-    # Сохраняем return_url и state в временном хранилище (Redis/БД/кеш)
-    req.session["return_url"] = return_url
     
     state_temp = str(uuid4())
     req.session["state"] = state_temp
@@ -99,7 +96,7 @@ def test():
 
 @router.on_event("startup")
 async def startup():
-    updater.start()  # ← вызовется 1 раз
+    updater.start()  
 
 @router.on_event("shutdown")
 async def shutdown():

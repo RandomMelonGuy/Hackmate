@@ -88,7 +88,7 @@ export default function RoomPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [commits, setCommits] = useState<Commit[]>([]);
   const [isLoadingCommits, setIsLoadingCommits] = useState(false);
-  const [connectedRepo, setConnectedRepo] = useState<string | null>(null);
+  const [connectedRepo, setConnectedRepo] = useState<string | null>(room?.github_repo);
 
   function shuffle(array: string[]) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -110,7 +110,7 @@ export default function RoomPage() {
     
     setIsLoadingCommits(true);
     try {
-      const response = await request(`/github/commits/${room.id}`, "get");
+      const response = await request(`/github/rooms/${roomCode}/commits`, "get");
       if (response.status === "success" && response.data) {
         setCommits(response.data);
       } else {
@@ -303,9 +303,9 @@ export default function RoomPage() {
             getMessages(roomCode);
           }
         }
-        //else if (data.msg_type === "commits_updated"){
-        //   setCommits(data.message)
-        //}
+        else if (data.msg_type === "commits_updated"){
+           setCommits(data.message)
+        }
       }
     }
 
@@ -482,7 +482,7 @@ export default function RoomPage() {
             🔗 Подключить репозиторий
           </button> : 
           <>
-          <p>Подключен репозиторий {room.github_repo}</p>
+          <p>Подключен репозиторий <a href={`https://github.com/${room.connected_user}/${room.github_repo}`} style={{color: "white"}}>{connectedRepo}</a></p>
           <button 
             className={styles.githubRepoBtn} 
             onClick={handleOpenRepoModal}
@@ -546,7 +546,7 @@ export default function RoomPage() {
               <span>📋 Техническое задание</span>
             </div>
             <div className={styles.specContent}>
-              <pre>{room.desc}</pre>
+              <pre className={styles.pre}>{room.desc}</pre>
             </div>
           </div>
         )}
