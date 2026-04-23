@@ -79,9 +79,9 @@ def connect_repo(req: ConnectRequest, user = Depends(verify_user)):
         return APIResponce(status="error")
     return APIResponce(status="success")
 
-@router.get("/rooms/{roomID}/commits")
-def get_repo_commits(roomID: int):
-    commits = service.get_room_commits(roomID)
+@router.get("/rooms/{roomCode}/commits")
+def get_repo_commits(roomCode: str):
+    commits = service.get_room_commits(roomCode)
     if not commits:
         return APIResponce(status="error")
     return APIResponce(status="success", data=commits)

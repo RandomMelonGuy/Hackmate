@@ -18,6 +18,8 @@ interface Room{
   name: string;
   code: string;
   desc: string;
+  connected_user?: string;
+  github_repo?: string;
   deadline: Date;
   members: Member[];
 }
@@ -126,21 +128,6 @@ export default function RoomPage() {
   };
 
   // Проверка подключённого репозитория при загрузке комнаты
-  const checkConnectedRepo = async () => {
-    try {
-      const res = await request(`/github/rooms/${room.id}/commits`, "get")
-      if (res.status == "success"){
-        setCommits(res.data)
-      }
-      else {
-        setConnectedRepo(null);
-        setCommits([]);
-      }
-    } catch (error) {
-      console.error("Ошибка проверки репозитория:", error);
-      setConnectedRepo(null);
-    }
-  };
 
   // Загрузка списка репозиториев GitHub
   const handleOpenRepoModal = async () => {
@@ -237,6 +224,22 @@ export default function RoomPage() {
       }
     }
 
+    const checkConnectedRepo = async (roomCode: string) => {
+    try {
+      const res = await request(`/github/rooms/${roomCode}/commits`, "get")
+      if (res.status == "success"){
+        setCommits(res.data)
+      }
+      else {
+        setConnectedRepo(null);
+        setCommits([]);
+      }
+    } catch (error) {
+      console.error("Ошибка проверки репозитория:", error);
+      setConnectedRepo(null);
+    }
+  };
+
     async function getMessages(code: string) {
       const res = await request(`/chat/room/${code}`, "get");
       if (res.status === "success"){
@@ -300,13 +303,16 @@ export default function RoomPage() {
             getMessages(roomCode);
           }
         }
+        //else if (data.msg_type === "commits_updated"){
+        //   setCommits(data.message)
+        //}
       }
     }
 
     getRoomData(roomCode);
     getTasks(roomCode);
     getMessages(roomCode);
-    checkConnectedRepo();
+    checkConnectedRepo(roomCode);
 
     return () => {
       isMounted = false;
@@ -468,12 +474,23 @@ export default function RoomPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          {!room.github_repo ?
           <button 
             className={styles.githubRepoBtn} 
             onClick={handleOpenRepoModal}
           >
             🔗 Подключить репозиторий
+          </button> : 
+          <>
+          <p>Подключен репозиторий {room.github_repo}</p>
+          <button 
+            className={styles.githubRepoBtn} 
+            onClick={handleOpenRepoModal}
+          >
+            🔗 Переключить репозиторий
           </button>
+          </>
+          }
           <button className={styles.leaveBtn} onClick={handleLeaveRoom}>
             Покинуть комнату
           </button>
@@ -549,7 +566,7 @@ export default function RoomPage() {
             >
               💬 Чат
             </button>
-            {connectedRepo && (
+            {room?.github_repo ? (
               <button 
                 className={`${styles.tab} ${activeTab === 'commits' ? styles.activeTab : ''}`}
                 onClick={() => {
@@ -561,7 +578,7 @@ export default function RoomPage() {
               >
                 📜 Коммиты
               </button>
-            )}
+            ) : ""}
           </div>
 
           {activeTab === 'tasks' ? (
@@ -650,7 +667,7 @@ export default function RoomPage() {
                 </button>
               </form>
             </div>
-          ) : activeTab === 'commits' && (
+          ) : activeTab === 'commits' ? (
             <div className={styles.commitsPanel}>
               <div className={styles.commitsHeader}>
                 <h2>📜 История коммитов</h2>
@@ -691,7 +708,7 @@ export default function RoomPage() {
                         <span>📝</span>
                       </div>
                       <div className={styles.commitContent}>
-                        <div className={styles.commitMessage}>{commit.message}</div>
+                        <div className={styles.commitMessage}>{commit.commit}</div>
                         <div className={styles.commitMeta}>
                           <span className={styles.commitAuthor}>👤 {commit.author}</span>
                           <span className={styles.commitDate}>📅 {new Date(commit.date).toLocaleString('ru-RU')}</span>
@@ -710,7 +727,7 @@ export default function RoomPage() {
                 </div>
               )}
             </div>
-          )}
+          ) : ""}
         </div>
       </div>
 

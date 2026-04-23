@@ -116,10 +116,10 @@ class GithubService:
             print(repr(e))
             return None
         
-    def get_room_commits(self, room_id: int):
+    def get_room_commits(self, room_code: str):
         try:
             with Session(self.engine) as session:
-                room = session.get(Room, room_id)
+                room = session.exec(select(Room).where(Room.code == room_code)).one()
                 assert room and room.connected_user and room.github_repo, "No required room params"
                 connected_user = room.connected_user
                 user = session.exec(select(User).where(User.github_username == connected_user)).one()
@@ -180,7 +180,7 @@ class RoomUpdater:
               #  print(f"🟢 Processing room {idx+1}/{len(rooms)}: {room.code}")
                 try:
                #     print(f"🟢 Getting commits for room {room.id}...")
-                    commits = self.service.get_room_commits(room.id)
+                    commits = self.service.get_room_commits(room.code)
                 #    print(f"🟢 Got {len(commits) if commits else 0} commits")
                     
                 #    print(f"🟢 Broadcasting to {room.code}...")
