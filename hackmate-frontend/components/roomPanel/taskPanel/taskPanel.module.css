@@ -1,0 +1,234 @@
+.tasksPanel {
+  padding: 1.25rem;
+}
+
+.tasksHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.tasksHeader h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.addTaskBtn {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addTaskBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 10px rgba(100, 108, 255, 0.3);
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.taskItem:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateX(4px);
+}
+
+.taskContent {
+  flex: 1;
+}
+
+.taskTitle {
+  font-weight: 500;
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.taskSubtitle {
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.taskMeta {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.taskStatus {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+}
+
+.statusSelect {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  color: #eef5ff;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #0f172a;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 24px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modalHeader h3 {
+  font-size: 1.25rem;
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.modalInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 0.75rem;
+  color: #eef5ff;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.modalInput:focus {
+  border-color: #646cff;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.modalCancel {
+  background: transparent;
+  border: 1px solid #2d3748;
+  color: #94a3b8;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modalSubmit {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Task Assignee */
+.taskAssignee {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.assigneeSelect {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  color: #eef5ff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.assigneeSelect:hover {
+  border-color: #8b5cf6;
+}
+
+.taskActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Modal Select */
+.modalSelect {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 0.75rem;
+  color: #eef5ff;
+  margin-bottom: 1rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.modalSelect:focus {
+  border-color: #646cff;
+}
+
+.modalSelect option {
+  background: #0f172a;
+  color: #eef5ff;
+}
+
+.delBtn{
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  border: 1px solid red;
+  color: red;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}

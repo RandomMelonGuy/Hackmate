@@ -37,7 +37,7 @@ export default function JoinRoomModal({ isOpen, onClose, onJoinRoom }: JoinRoomM
         <button className={styles.closeBtn} onClick={onClose}>✕</button>
         
         <div className={styles.modalHeader}>
-          <h2 className={styles.title}>Войти в комнату</h2>
+          <h2 className={styles.title}> в комнату</h2>
           <p className={styles.subtitle}>Введи код приглашения от организатора</p>
         </div>
 

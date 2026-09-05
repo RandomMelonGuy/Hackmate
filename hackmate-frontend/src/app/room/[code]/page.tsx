@@ -6,6 +6,10 @@ import styles from './room.module.css';
 import request from '@/api/api';
 import useAuth from '@/context/AuthContext';
 import { WSMessage } from '@/api/types';
+import TaskPanel from '@/components/roomPanel/taskPanel/taskPanel';
+import ChatPanel from '@/components/roomPanel/chatPanel/chatPanel';
+import CommitPanel from '@/components/roomPanel/commitPanel/commitPanel';
+import { Member, Task, Commit, Message, Room } from '@/api/types';
 
 interface RoomData{
   room: Room
@@ -13,45 +17,7 @@ interface RoomData{
   tasks?: Task[]
 }
 
-interface Room{
-  id: number;
-  name: string;
-  code: string;
-  desc: string;
-  connected_user?: string;
-  github_repo?: string;
-  deadline: Date;
-  members: Member[];
-}
 
-interface Member {
-  id: number;
-  username: string;
-}
-
-interface Task {
-  id: number;
-  name: string;
-  desc?: string;
-  status: 'todo' | 'in_progress' | 'done';
-  assignedTo?: number;
-  assignedToName?: string;
-}
-
-interface Message {
-  id: number;
-  author: number;
-  username: string;
-  text: string;
-}
-
-interface Commit {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-  url: string;
-}
 
 export default function RoomPage() {
   const { code } = useParams();
@@ -73,11 +39,6 @@ export default function RoomPage() {
   const { room, members } = roomData;
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDesc, setNewTaskDesc] = useState("");
-  const [newTaskAssignee, setNewTaskAssignee] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'tasks' | 'chat' | 'commits'>('tasks');
 
   // GitHub состояния
@@ -89,20 +50,6 @@ export default function RoomPage() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [isLoadingCommits, setIsLoadingCommits] = useState(false);
   const [connectedRepo, setConnectedRepo] = useState<string | null>(room?.github_repo);
-
-  function shuffle(array: string[]) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
-
-  const genUUID = () => {
-    const chars = "01234567890qwertyuiopasdfghjklzxcvbnm";
-    const arr = shuffle(Array.from(chars));
-    return arr.join("")
-  }
 
   // Загрузка коммитов подключённого репозитория
   const loadCommits = async () => {
@@ -347,110 +294,6 @@ export default function RoomPage() {
     }
   };
 
-  const handleAddTask = async() => {
-    if (!newTaskTitle.trim()) return;
-    
-    const assignee = members.find(m => m.id === newTaskAssignee);
-    
-    const newTask: Task = {
-      name: newTaskTitle,
-      desc: newTaskDesc,
-      status: "todo",
-      assignedTo: newTaskAssignee,
-      assignedToName: assignee?.username,
-    };
-
-    const res = await request("/task/create", "post", { name: newTaskTitle, desc: newTaskDesc, status: "todo", assignedTo: newTaskAssignee, room_id: room.id });
-
-    if (res.status === "success"){
-      setTasks([...tasks, res.data]);
-      wsRef.current.send(JSON.stringify({msg_type: "task_created"}))
-    }
-
-    else{
-      console.log("ERROR ADDING A TASK")
-    }
-
-    setNewTaskTitle("");
-    setNewTaskDesc("");
-    setNewTaskAssignee(null);
-    setIsAddTaskOpen(false);
-  };
-
-  const handleUpdateTaskStatus = async(taskId: number, newStatus: Task['status']) => {
-    const task = tasks.find(el => el.id == taskId);
-    if (!task) return;
-    const res = await request("/task/update", "post", {name: task.name, desc: task.desc, status: newStatus, assignedTo: task.assignedTo, task_id: taskId});
-    if (res.status === "success"){
-      wsRef.current.send(JSON.stringify({msg_type: "task_updated"}))
-      setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
-    }
-    else{
-      alert("Не удалось изменить статус. Проверьте соединение с интернетом.")
-    }
-  };
-
-  const handleReassignTask = async(taskId: number, memberId: number | null) => {
-    const assignee = members.find(m => m.id === memberId);
-    const task = tasks.find(el => el.id == taskId);
-    if (!task) return;
-    const res = await request("/task/update", "post", {name: task.name, desc: task.desc, status: task.status, assignedTo: memberId, task_id: taskId});
-    if (res.status === "success"){
-      setTasks(tasks.map(task => 
-      task.id === taskId ? { 
-        ...task, 
-        assignedTo: memberId,
-        assignedToName: assignee?.username
-      } : task
-    ));
-    wsRef.current.send(JSON.stringify({msg_type: "task_updated"}))
-    }
-    else{
-      alert("HUH")
-    }
-  };
-
-  const deleteTask = async(taskID: number) => {
-    console.log(taskID);
-    const res = await request("/task/delete", "post", { id: taskID });
-    if (res.status === "success"){
-      setTasks(data => data.filter((el) => el.id !== taskID));
-      wsRef.current.send(JSON.stringify({msg_type: "task_deleted"}))
-    }
-    else{
-      console.log(res);
-      console.error("CAN NOT DELETE TASK");
-    }
-  }
-
-  const handleSendMessage = async(e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    
-    const message: Message = {
-      author: user?.id,
-      username: user?.username,
-      text: newMessage,
-    };
-    const res = await request("/chat/send", "post", {text: newMessage, room_id: room.id});
-    if (res.status === "success"){
-      setMessages([...messages, message]);
-      setNewMessage("");
-      wsRef.current.send(JSON.stringify({msg_type: "chat_messaged"}));
-    }
-    
-  };
-
-  const getTaskStatusLabel = (status: Task['status']) => {
-    switch (status) {
-      case 'todo': return { text: 'К выполнению', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)' };
-      case 'in_progress': return { text: 'В процессе', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.1)' };
-      case 'done': return { text: 'Выполнено', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
-    }
-  };
-
   const tasksStats = {
     total: tasks.length,
     todo: tasks.filter(t => t.status === 'todo').length,
@@ -582,201 +425,15 @@ export default function RoomPage() {
           </div>
 
           {activeTab === 'tasks' ? (
-            <div className={styles.tasksPanel}>
-              <div className={styles.tasksHeader}>
-                <h2>Задачи спринта</h2>
-                <button className={styles.addTaskBtn} onClick={() => setIsAddTaskOpen(true)}>
-                  + Добавить задачу
-                </button>
-              </div>
-
-              <div className={styles.tasksList}>
-                {tasks.map(task => {
-                  const statusStyle = getTaskStatusLabel(task.status);
-                  return (
-                    <div key={genUUID()} className={styles.taskItem}>
-                      <div className={styles.taskContent}>
-                        <div className={styles.taskTitle}>{task.name}</div>
-                        <div className={styles.taskSubtitle}>{task.desc}</div>
-                        <div className={styles.taskMeta}>
-                          <span className={styles.taskStatus} style={{ background: statusStyle.bg, color: statusStyle.color }}>
-                            {statusStyle.text}
-                          </span>
-                          <span className={styles.taskAssignee}>
-                            👤 {task.assignedToName || "Не назначен"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className={styles.taskActions}>
-                        <select
-                          value={task.assignedTo || ""}
-                          onChange={(e) => handleReassignTask(task.id, e.target.value ? Number(e.target.value) : null)}
-                          className={styles.assigneeSelect}
-                        >
-                          <option value="">Назначить...</option>
-                          {members.map(member => (
-                            <option key={member.id} value={member.id}>
-                              {member.username}
-                            </option>
-                          ))}
-                        </select>
-                        <select 
-                          value={task.status}
-                          onChange={(e) => handleUpdateTaskStatus(task.id, e.target.value as Task['status'])}
-                          className={styles.statusSelect}
-                        >
-                          <option value="todo">К выполнению</option>
-                          <option value="in_progress">В процессе</option>
-                          <option value="done">Выполнено</option>
-                        </select>
-                        <button className={styles.delBtn} onClick={() => deleteTask(task.id)}>X</button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <TaskPanel tasks={tasks} members={members} wsRef={wsRef} setTasks={setTasks} room_id={room.id} />
           ) : activeTab === 'chat' ? (
-            <div className={styles.chatPanel}>
-              <div className={styles.chatMessages}>
-                {messages.map(message => (
-                  <div key={genUUID()} className={styles.messageItem}>
-                    <div className={styles.messageAvatar}>
-                      {message.username[0]}
-                    </div>
-                    <div className={styles.messageContent}>
-                      <div className={styles.messageHeader}>
-                        <span className={styles.messageAuthor}>{message.username}</span>
-                      </div>
-                      <div className={styles.messageText}>{message.text}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form className={styles.chatInputForm} onSubmit={handleSendMessage}>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Введите сообщение..."
-                  className={styles.chatInput}
-                />
-                <button type="submit" className={styles.sendBtn}>
-                  Отправить
-                </button>
-              </form>
-            </div>
+            <ChatPanel wsRef={wsRef} messages={messages} room_id={room.id} setMessages={setMessages} user={user} />
           ) : activeTab === 'commits' ? (
-            <div className={styles.commitsPanel}>
-              <div className={styles.commitsHeader}>
-                <h2>📜 История коммитов</h2>
-                {connectedRepo && (
-                  <div className={styles.connectedRepoInfo}>
-                    <span className={styles.repoBadge}>🔗 {connectedRepo}</span>
-                    <button 
-                      className={styles.refreshCommitsBtn} 
-                      onClick={loadCommits}
-                      disabled={isLoadingCommits}
-                    >
-                      🔄 Обновить
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {isLoadingCommits ? (
-                <div className={styles.commitsLoader}>
-                  <div className={styles.loader}></div>
-                  <p>Загрузка коммитов...</p>
-                </div>
-              ) : commits.length === 0 ? (
-                <div className={styles.emptyCommits}>
-                  <span className={styles.emptyIcon}>📭</span>
-                  <h3>Нет коммитов</h3>
-                  <p>
-                    {connectedRepo 
-                      ? "В этом репозитории пока нет коммитов или они не загрузились" 
-                      : "Репозиторий не подключён. Нажмите 'Подключить репозиторий' выше"}
-                  </p>
-                </div>
-              ) : (
-                <div className={styles.commitsList}>
-                  {commits.map((commit) => (
-                    <div key={commit.sha} className={styles.commitItem}>
-                      <div className={styles.commitAvatar}>
-                        <span>📝</span>
-                      </div>
-                      <div className={styles.commitContent}>
-                        <div className={styles.commitMessage}>{commit.commit}</div>
-                        <div className={styles.commitMeta}>
-                          <span className={styles.commitAuthor}>👤 {commit.author}</span>
-                          <span className={styles.commitDate}>📅 {new Date(commit.date).toLocaleString('ru-RU')}</span>
-                          <a 
-                            href={commit.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className={styles.commitLink}
-                          >
-                            🔗 #{commit.sha.slice(0, 7)}
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <CommitPanel commits={commits} loadCommits={loadCommits} isLoadingCommits={isLoadingCommits} connectedRepo={connectedRepo} />
           ) : ""}
         </div>
       </div>
 
-      {/* Модальное окно добавления задачи */}
-      {isAddTaskOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsAddTaskOpen(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3>Добавить задачу</h3>
-              <button className={styles.modalClose} onClick={() => setIsAddTaskOpen(false)}>✕</button>
-            </div>
-            <input
-              type="text"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              placeholder="Название задачи"
-              className={styles.modalInput}
-              autoFocus
-            />
-            <input
-              type="text"
-              value={newTaskDesc}
-              onChange={(e) => setNewTaskDesc(e.target.value)}
-              placeholder="Описание задачи"
-              className={styles.modalInput}
-            />
-            <select
-              value={newTaskAssignee || ""}
-              onChange={(e) => setNewTaskAssignee(e.target.value ? Number(e.target.value) : null)}
-              className={styles.modalSelect}
-            >
-              <option value="">Назначить ответственного (опционально)</option>
-              {members.map(member => (
-                <option key={member.id} value={member.id}>
-                  {member.username}
-                </option>
-              ))}
-            </select>
-            <div className={styles.modalActions}>
-              <button className={styles.modalCancel} onClick={() => setIsAddTaskOpen(false)}>
-                Отмена
-              </button>
-              <button className={styles.modalSubmit} onClick={handleAddTask}>
-                Добавить
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Модальное окно выбора репозитория GitHub */}
       {isRepoModalOpen && (

@@ -30,7 +30,7 @@ class RoomWS:
                 del self.rooms[code]
     
     async def broadcast(self, code: str, message: WSMessage):
-        print(code, self.rooms)
+        # print(code, self.rooms)
         if code not in self.rooms.keys():
             return
         

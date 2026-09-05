@@ -130,7 +130,7 @@ class GithubService:
                 data = [{'commit': i["commit"]["message"], 'author': i["committer"]["login"], 'sha': i["sha"], 'date': i["commit"]["author"]["date"]} for i in res]
                 return data
         except Exception as e:
-            print(repr(e))
+            # print(repr(e))
             return None
         
     def get_room_repo(self, roomID: int):
@@ -188,7 +188,7 @@ class RoomUpdater:
                         room.code, 
                         WSMessage(msg_type="commits_updated", message=commits)
                     )
-                    print(f"🟢 Broadcast done for {room.code}")
+                    # print(f"🟢 Broadcast done for {room.code}")
                  #   print("REPEATED")
                     
                 except Exception as e:

@@ -38,6 +38,7 @@ class AuthService:
             return False
         
     def get_jwt(self, session: str):
+       #print(session)
         try:
             obj = jwt.decode(session, settings.JWT_KEY, "HS256")
             with Session(self.engine) as s:

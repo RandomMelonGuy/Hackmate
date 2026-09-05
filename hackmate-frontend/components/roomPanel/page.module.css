@@ -1,0 +1,173 @@
+/* Main */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.createBtn {
+  background: linear-gradient(90deg, #646cff, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.createBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
+}
+
+.joinBtn {
+  background: transparent;
+  border: 1px solid #3b4252;
+  color: #eef5ff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.joinBtn:hover {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.1);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 24px;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  color: #94a3b8;
+}
+
+/* Rooms Grid */
+.roomsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.roomCard {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 20px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.roomCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(100, 108, 255, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.roomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.roomName {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.expiredBadge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+}
+
+.roomDetails {
+  margin-bottom: 1rem;
+}
+
+.roomCode {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.roomCode code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  color: #8b5cf6;
+  font-family: monospace;
+}
+
+.roomDeadline {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.roomMembers {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.enterBtn {
+  width: 100%;
+  background: rgba(100, 108, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: #eef5ff;
+  padding: 0.6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.enterBtn:hover:not(:disabled) {
+  background: rgba(100, 108, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.enterBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

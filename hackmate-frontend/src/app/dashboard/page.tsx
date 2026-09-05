@@ -115,6 +115,7 @@ export default function Dashboard() {
     // GitHub OAuth login handler
     const handleGitHubLogin = () => {
     const session = Cookies.get("session");
+    console.log(session, "SESSION")
     const width = 800;
     const height = 600;
     const left = (window.screen.width - width) / 2;

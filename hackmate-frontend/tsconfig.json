@@ -22,7 +22,8 @@
       "@/*": ["./src/*"],
       "@/api/*": ["./api/*"],
       "@/context/*": ["./contexts/*"],
-      "@/components/*": ["./components/*"]
+      "@/components/*": ["./components/*"],
+      "@/utils/*": ["./utils/*"]
     }
   },
   "include": [

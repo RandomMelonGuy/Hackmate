@@ -4,6 +4,7 @@ from .service import AuthService
 from core.types import APIResponce
 from core.security import verify_user
 from typing import Dict
+import datetime
 
 router = APIRouter()
 service = AuthService()
@@ -12,7 +13,7 @@ service = AuthService()
 def auth(data: AuthData, responce: Response) -> APIResponce:
     code = service.auth(data)
     if code:
-        responce.set_cookie("session", code, samesite="lax")
+        responce.set_cookie("session", code, samesite="lax", expires=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=10))
         return APIResponce(status="success")
     else:
         return APIResponce(status="error")

@@ -5,6 +5,7 @@ from core.types import User
 
 def verify_user(req: Request):
     session = req.cookies.get("session")
+    print("VERIFY SESSION", session)
     if not session:
         raise HTTPException(status_code=401,detail="Not autorized")
     try:

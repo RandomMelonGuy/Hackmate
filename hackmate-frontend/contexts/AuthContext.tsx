@@ -28,6 +28,7 @@ export function AuthProvider({children}: {children: ReactNode}){
 
     useEffect(() => {
         const session = Cookie.get("session");
+
         
         if (!session) {
             setLoading(false); // 👈 Нет сессии - загрузка закончена
@@ -37,18 +38,21 @@ export function AuthProvider({children}: {children: ReactNode}){
         request("/auth/jwt/", "get")
             .then(data => {
                 if (data.status === "success") {
+                    console.log(data);
                     setUser(data.data as User);
                 }
             })
-            .catch(e => console.log(e))
+            .catch(e => console.log("JWT RESPONCE",e))
             .finally(() => setLoading(false)); // 👈 Всегда устанавливаем false
     }, []);
 
     async function login(data: AuthData) {
         const res = await request("/auth/", "post", data);
         if (res.status === "success"){
+            //Cookie.set("session", res.data as string, {domain: "localhost"});
             // После логина нужно перезагрузить данные пользователя
             const userData = await request("/auth/jwt/", "get");
+            //console.log(userData);
             if (userData.status === "success") {
                 setUser(userData.data as User);
             }
